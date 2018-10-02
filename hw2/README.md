@@ -2,7 +2,7 @@
 
 This file is the homework 2: d-separation finding Algorithm.
 
-To run for results, please run 'test.py', which contains problem
+To run for results, please run test.py, which contains problem
 
 1. a - e are the problems of given observation set and start node in a DAG (Directed Aclylic Graph), to analyze if the start node could influence end node;
 
