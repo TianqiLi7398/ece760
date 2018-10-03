@@ -45,7 +45,7 @@ def main():
     # check correctness of V value
     if len(keys) != V:
         print('V is not the number of vertices, while it is ', V, '.')
-    # add childrens to each vertices
+    # add children to each vertices
     for key in keys:
         g[key] = []
     for i in range(M):
@@ -53,7 +53,7 @@ def main():
             g[a[i+1].split(' ')[0]].append(a[i+1].split(' ')[1])
         except IndexError:
             return print('edge is not well determind at', i+1, 'th line :(')
-    # graph's info is constructed completed!
+    # graph is constructed completed!
 
     # grab queries info
     observes, sources = [], []
