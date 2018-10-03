@@ -4,6 +4,7 @@
 
 import numpy as np
 import graph
+import sys
 
 
 def output_1(graph, observe, source, end):
@@ -16,6 +17,9 @@ def output_1(graph, observe, source, end):
 
 
 def main():
+
+    infile = sys.argv[1]
+    print(infile)
 
     g = {"a": ["d"],
          "b": ["d"],
