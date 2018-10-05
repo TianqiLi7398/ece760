@@ -1,5 +1,10 @@
 # ece 760 HW2
 
+## Question 1. Finding d-separated nodes
+A py script is built to get info from txt files and output txt file with all d-separated nodes.
+### Instruction
+Run main.py filename.txt in terminal
+
 This file is the homework 2: d-separation finding Algorithm.
 
 To run for results, please run test.py, which contains problem
