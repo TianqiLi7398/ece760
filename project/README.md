@@ -1,27 +1,21 @@
-# ECE 760 HW2
+# ECE 760 Final project
 
-## Question 1. Finding d-separated nodes
+## Part 1. Pearl's Message Passing Alogirthm - inference in singly connected graphs
 
-A py script is built to get info from txt files and output txt file with all d-separated nodes. All code is generated in python 3.5.5. The library file `graph.py` defines the class of DAG, which contains function `DAG.D_sep()` that returns set of nodes Y that are d-separated from source node given observation.
+In this floder, there are three python 3.5 files to complete the inference problem.
+
+* [graph.py](https://github.com/TianqiLi7398/ece760/tree/master/project/graph.py): this is the file to initialize a BN clasee named 'DAG'
+* [pearl.py](https://github.com/TianqiLi7398/ece760/blob/master/project/pearl.py): this contains an inherit class of 'DAG', named Pearls, which has the main functions of pearl's message passing alg.
+
+* [main.py](https://github.com/TianqiLi7398/ece760/blob/master/project/main.py): this is the executable file for inference. The BN strucuture, CPDs and all inference questions are hand coded inside.
 
 ### Instruction
-With txt file put in the same folder with main.py file, we can run
+To get the solution of first part project, please run
 ```
-$ python main.py filename.txt
+$ python main.py
 ```
 to get results.
 
-A `result.txt` will be generated in the same flolder.
+All inference will be printed in the terminal.
 
-## Question 2. HW1 queries
 
-In HW1, the queries are
-
-1. a - e are the problems of given observation set and start node in a DAG (Directed Aclylic Graph), to analyze if the start node could influence end node;
-
-2. f - g are the problems of given observation set and start node in a DAG, provide the set of nodes Y that are d-separated.
-
-Because the trivial queries do not fit the txt format given by instructor, I hand code the all queries in code, to get result of HW1, please run
-```
-$ python main.py hw1
-```
