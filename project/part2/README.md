@@ -1,6 +1,8 @@
 # ECE 760 Final project
 
-## Part 1. Pearl's Message Passing Alogirthm - inference in singly connected graphs
+## Part 2. Pearl's Message Passing Alogirthm - inference application in human error prediction
+
+Please check the [link](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6837128) for the model.
 
 In this floder, there are three python 3.5 files to complete the inference problem.
 
