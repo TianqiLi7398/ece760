@@ -15,10 +15,11 @@ class Pearls(DAG):
         of pi value of all root nodes.
         '''
 
-        DAG.__init__(
-            self,  graph_dict)
+        DAG.__init__(self,  graph_dict)
         self.E, self.e = [], []
-        self.value = [0, 1]  # this is value set each node can take
+        self.value = {}
+        for key in list(marginal.keys()):
+            self.value[key] = list(marginal[key].keys())  # this is value set each node can take
         self.lamda = dict.fromkeys(graph_dict.keys())
         self.pi = dict.fromkeys(graph_dict.keys())
         self.lamda_msg = dict.fromkeys(graph_dict.keys())
@@ -36,28 +37,28 @@ class Pearls(DAG):
         self.get_root()
 #         initialize lamda
         for x in self.vertices:
-            for x_value in self.value:
+            for x_value in self.value[x]:
                 # data strucutre for lamuda(X = x_value) is self.lamda[X][x_value]
                 self.lamda[x][x_value] = 1
 
 #         initialize lamda_msg
             for z in self.parents[x]:
                 self.lamda_msg[z][x] = {}
-                for z_value in self.value:
+                for z_value in self.value[z]:
                     # data strucutre for lamuda_X(Z = z_value) is self.lamda_msg[Z][X][z_value]
                     self.lamda_msg[z][x][z_value] = 1
 
 #          initialize pi_msg
             for y in self.graph_dict[x]:
                 self.pi_msg[x][y] = {}
-                for x_value in self.value:
+                for x_value in self.value[x]:
                     # data strucutre for pi_Y(Z = z_value) is self.lamda_msg[Z][Y][z_value]
                     self.pi_msg[x][y][x_value] = 1
 
 
 #         send pi_message
         for R in self.root:
-            for r_value in self.value:
+            for r_value in self.value[R]:
                 # data strucutre for pi(X = x_value) is self.pi[X][x_value]
                 self.pi[R][r_value] = self.marginal[R][r_value]
                 # data strucutre for P(X = x|e) is self.cpd[X][x]
@@ -82,20 +83,19 @@ class Pearls(DAG):
         # exclude Z itself, BE CAUTIOUS THAT WE NEED TO USE deepcopy to keep
         # original data save when using remove function
         U.remove(X)
-        for z_value in self.value:
+        for z_value in self.value[Z]:
             self.pi_msg[Z][X][z_value] = self.pi[Z][z_value]
-
-            if U != None:
+            if U != []:
+                print('falut!!!!!!', Z)
                 for u in U:
-
                     self.pi_msg[Z][X][z_value] = self.pi_msg[Z][X][z_value] * \
                         self.lamda_msg[Z][u][z_value]
 
         P_tilta = []
         if X not in self.E:
 
-            for x_value in self.value:
-                [zs, probs] = self.CPD[X]
+            for x_value in self.value[X]:
+                [zs, probs] = self.CPD[X][x_value]
                 total = self.calculate_pi(X, x_value, zs, probs)
                 self.pi[X][x_value] = total
                 P_tilta.append(self.lamda[X][x_value] * self.pi[X][x_value])
@@ -105,15 +105,16 @@ class Pearls(DAG):
             for Y in self.graph_dict[X]:
                 self.send_pi_msg(X, Y)
 
-        for x_value in self.value:
+        for x_value in self.value[X]:
             if self.lamda[X][x_value] != 1:
                 # here is to check if V-structure is turned on, by checking the
                 # descendant's lamda value
                 other_parents = copy.deepcopy(self.parents[X])
                 other_parents.remove(Z)
-                if other_parents != None:
+                if other_parents != []:
                     for W in other_parents:
                         if W not in self.E:
+                            print('falut!!w', W)
                             self.send_lamda_msg(X, W)
 
         return
@@ -124,73 +125,88 @@ class Pearls(DAG):
         #         probs will be a k dimentional 2*...2*2 matrix for k parents
         k = len(zs)
 
-        prob_matrix = np.matrix(probs)
+        prob_matrix = np.array(probs)
         prob_matrix = prob_matrix.flatten()
         total = 0
 
-        for i in range(2**k):
+        for i in range(3**k):
 
-            if x == 1:
-                p = prob_matrix[0, i]
-            else:
-                p = 1 - prob_matrix[0, i]
+            p = prob_matrix[i]
 
             for j in range(k):
-                if i - 2**(k-j-1) + 1 > 0:
+
+                if i - 2*3**(k-j-1) + 1 > 0:
+                    #  this means z_k value is 2
+                    try:
+                        p = p * self.pi_msg[zs[j]][X][2]
+                        i = i - 2*3**(k-j-1)
+                    except:
+                        print(X, zs)
+                        print([zs[j]], [X], [2])
+                        print(self.pi_msg[zs[j]][X][2])
+                        i = i - 2*3**(k-j-1)
+                elif i - 3**(k-j-1) + 1 > 0:
                     #  this means z_k value is 1
                     p = p * self.pi_msg[zs[j]][X][1]
-                    i = i - 2**(k-j-1)
+
+                    i = i - 3**(k-j-1)
                 else:
+                    #  this means z_k value is 0
                     p = p * self.pi_msg[zs[j]][X][0]
+
             total += p
+
         return total
 
     def normalize(self, X, P):
         # this function is to normalize the P_tilta
         sum_ = 0
-        for i in self.value:
+        for i in self.value[X]:
             sum_ += P[i]
-        for x_value in self.value:
+        for x_value in self.value[X]:
             self.cpd[X][x_value] = P[x_value] / sum_
         return
 
-    def calculate_lamda(self, X, x, Y, zs, probs):
+    def calculate_lamda(self, X, x, Y):
         # similar to the calculate_pi function, but when doing product, x will
         # be passed
+        zs = self.CPD[Y][0][0]
         k = len(zs)
 
-        prob_matrix = np.matrix(probs)
-        prob_matrix = prob_matrix.flatten()
         total = 0
         x_index = zs.index(X)
 
-        for y in self.value:
+        for y in self.value[Y]:
+            prob_matrix = np.asarray(self.CPD[Y][y][1]).flatten()
 
-            for i in range(2**k):
-
-                if y == 1:
-                    p = prob_matrix[0, i]
-                else:
-                    p = 1 - prob_matrix[0, i]
-
+            for i in range(3**k):
+                p = prob_matrix[i]
                 for j in range(k):
-                    if i - 2**(k-j-1) + 1 > 0:
-                        #  this means z_k = 1
+                    if i - 2*3**(k-j-1) + 1 > 0:
+                        #  this means x_k value is 2
+                        if j == x_index:
+                            # pass x
+                            if x != 2:
+                                p = 0
+                            else:
+                                p = p
+                        else:
+                            p = p * self.pi_msg[zs[j]][Y][2]
+                        i = i - 2*3**(k-j-1)
+                    elif i - 3**(k-j-1) + 1 > 0:
+                        #  this means x_k value is 1
                         if j == x_index:
                             # pass x
                             if x != 1:
                                 p = 0
                             else:
                                 p = p
-
                         else:
                             p = p * self.pi_msg[zs[j]][Y][1]
 
-                        #   update i
-                        i = i - 2**(k-j-1)
+                        i = i - 3**(k-j-1)
                     else:
-                        #  this means z_k = 0
-
+                        #  this means x_k value is 0
                         if j == x_index:
                             # pass x
                             if x != 0:
@@ -198,9 +214,11 @@ class Pearls(DAG):
                             else:
                                 p = p
                         else:
+
                             p = p * self.pi_msg[zs[j]][Y][0]
 
                 total += p * self.lamda[Y][y]
+
         return total
 
     def send_lamda_msg(self, Y, X):
@@ -208,10 +226,9 @@ class Pearls(DAG):
 
         P_tilta = []
 
-        for x_value in self.value:
-            [zs, probs] = self.CPD[Y]
-            self.lamda_msg[X][Y][x_value] = self.calculate_lamda(
-                X, x_value, Y, zs, probs)
+        for x_value in self.value[X]:
+
+            self.lamda_msg[X][Y][x_value] = self.calculate_lamda(X, x_value, Y)
 
             lamda = 1
 
@@ -240,7 +257,7 @@ class Pearls(DAG):
         self.E.append(V)
         self.e.append((V, v_value_hat))
 
-        for v in self.value:
+        for v in self.value[V]:
             if v == v_value_hat:
                 self.lamda[V][v] = 1
                 self.pi[V][v] = 1
