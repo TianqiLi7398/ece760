@@ -85,7 +85,7 @@ class Pearls(DAG):
         for z_value in self.value:
             self.pi_msg[Z][X][z_value] = self.pi[Z][z_value]
 
-            if U != None:
+            if U != []:
                 for u in U:
 
                     self.pi_msg[Z][X][z_value] = self.pi_msg[Z][X][z_value] * \
@@ -111,7 +111,7 @@ class Pearls(DAG):
                 # descendant's lamda value
                 other_parents = copy.deepcopy(self.parents[X])
                 other_parents.remove(Z)
-                if other_parents != None:
+                if other_parents != []:
                     for W in other_parents:
                         if W not in self.E:
                             self.send_lamda_msg(X, W)
